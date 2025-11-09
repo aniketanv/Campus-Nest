@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  /* Buttons */
+  .btn {
+    @apply px-4 py-2 rounded-2xl shadow
+           bg-blue-600 text-white hover:bg-blue-700
+           transition;
+  }
+
+  /* Cards */
+  .card {
+    @apply rounded-2xl shadow p-5
+           bg-white text-gray-900
+           border border-gray-200
+           dark:bg-gray-900 dark:text-gray-100
+           dark:border-gray-800;
+  }
+
+  /* Chips (WiFi / Hot water / Timings) */
+  .chip {
+    @apply px-2 py-1 text-xs rounded-full
+           bg-gray-100 text-gray-700
+           dark:bg-gray-700 dark:text-gray-100;
+  }
+
+  /* Inputs (optional utility so you don’t repeat) */
+  .input {
+    @apply border rounded-2xl px-4 py-3 w-full
+           bg-white text-gray-900 placeholder-gray-500 border-gray-300
+           focus:outline-none focus:ring-2 focus:ring-blue-500
+           dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-400 dark:border-gray-600;
+  }
+}
