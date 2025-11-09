@@ -6,9 +6,24 @@ export default function PgCard({ item }) {
     <div className="card flex flex-col gap-3">
       <div className="h-44 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800">
         {item.photos?.[0] ? (
-          <img src={item.photos[0]} alt={item.name} className="object-cover w-full h-full" />
+          <img
+            src={item.photos[0]}
+            alt={item.name}
+            className="object-cover w-full h-full"
+            referrerPolicy="no-referrer"
+            onError={(e) => {
+              // graceful fallback
+              e.currentTarget.onerror = null;
+              e.currentTarget.replaceWith(
+                Object.assign(document.createElement("div"), {
+                  className: "w-full h-full grid place-items-center text-sm text-gray-500 dark:text-gray-400",
+                  innerText: "Image unavailable",
+                })
+              );
+            }}
+          />
         ) : (
-          <div className="w-full h-full grid place-items-center text-sm text-gray-500 dark:text-gray-300">
+          <div className="w-full h-full grid place-items-center text-sm text-gray-500 dark:text-gray-400">
             No Image
           </div>
         )}

@@ -27,7 +27,7 @@
   }
 
   /* Inputs (optional utility so you don’t repeat) */
-  .input {
+   .input {
     @apply border rounded-2xl px-4 py-3 w-full
            bg-white text-gray-900 placeholder-gray-500 border-gray-300
            focus:outline-none focus:ring-2 focus:ring-blue-500

@@ -1,14 +1,19 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import ThemeToggle from "./ThemeToggle";
+import SearchBar from "./SearchBar";
 
 export default function Navbar() {
   const loc = useLocation();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
+  // Show search on Home and Search routes
+  const showSearch = loc.pathname === "/" || loc.pathname === "/search";
+
   return (
     <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur sticky top-0 z-10 shadow-sm border-b border-gray-200 dark:border-gray-700 transition-all duration-200">
       <div className="container py-3 flex items-center justify-between">
+        {/* Logo */}
         <Link
           to="/"
           className="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-gray-100"
@@ -16,14 +21,21 @@ export default function Navbar() {
           CampusNest
         </Link>
 
+        {/* Navigation */}
         <nav className="flex items-center gap-4 text-sm text-gray-800 dark:text-gray-100">
+          {/* Always visible links */}
           <Link to="/about" className={linkCls(loc.pathname === "/about")}>
             About
           </Link>
-          <Link to="/add-pg" className={linkBtn()}>
-            Add PG
-          </Link>
 
+          {/* Show Add PG only for logged-in owners */}
+          {user?.id && user.role === "owner" && (
+            <Link to="/dashboard/owner" className={linkBtn()}>
+              Add PG
+            </Link>
+          )}
+
+          {/* Hide sign-in links if logged in */}
           {!user?.id && (
             <>
               <Link to="/signin/seeker" className="btn">
@@ -44,6 +56,7 @@ export default function Navbar() {
             </>
           )}
 
+          {/* Logged-in user options */}
           {user?.id && (
             <>
               {user.role === "owner" ? (
@@ -71,14 +84,22 @@ export default function Navbar() {
             </>
           )}
 
-          {/* 🌗 Theme Toggle Button */}
+          {/* 🌗 Theme Toggle */}
           <ThemeToggle />
         </nav>
       </div>
+
+      {/* 🔍 Persistent SearchBar on Home + Search routes */}
+      {showSearch && (
+        <div className="container pb-3">
+          <SearchBar />
+        </div>
+      )}
     </header>
   );
 }
 
+/* --- Helper styles --- */
 function linkCls(active) {
   return (
     "px-3 py-2 rounded-2xl transition-all " +

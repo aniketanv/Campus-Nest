@@ -11,16 +11,29 @@ export default function PgDetails() {
   const [sharing, setSharing] = useState("double");
   const nav = useNavigate();
 
-  useEffect(() => { axios.get(`${api}/api/pgs/${id}`).then(r => setPg(r.data)); }, [id]);
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = await axios.get(`${api}/api/pgs/${id}`);
+        setPg(r.data);
+        // default sharing to first option if present
+        if (r.data?.rentOptions?.[0]?.sharing) setSharing(r.data.rentOptions[0].sharing);
+      } catch (e) {
+        console.error(e);
+      }
+    })();
+  }, [id]);
+
   const price = pg?.rentOptions?.find(r => r.sharing === sharing)?.price || 0;
 
   const reserve = async () => {
     const token = getToken();
     if (!token) { alert("Please sign in as Student/Job to reserve."); nav("/signin/seeker"); return; }
     try {
-      const r = await axios.post(`${api}/api/bookings`, { pgId: id, sharing, months: 1, amount: price }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const r = await axios.post(`${api}/api/bookings`,
+        { pgId: id, sharing, months: 1, amount: price },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       window.open(`${api}${r.data.receiptUrl}`, "_blank");
       alert("Reserved! Mock receipt opened.");
     } catch (e) {
@@ -28,18 +41,39 @@ export default function PgDetails() {
     }
   };
 
-  if (!pg) return <div>Loading...</div>;
+  if (!pg) {
+    return (
+      <div className="card animate-pulse space-y-3">
+        <div className="h-56 rounded-xl bg-gray-200 dark:bg-gray-800" />
+        <div className="h-6 w-1/2 bg-gray-200 dark:bg-gray-800 rounded" />
+        <div className="h-4 w-1/3 bg-gray-200 dark:bg-gray-800 rounded" />
+      </div>
+    );
+  }
 
   return (
     <div className="grid md:grid-cols-2 gap-6">
+      {/* Media */}
       <div className="card">
-        <div className="h-72 rounded-xl overflow-hidden bg-gray-100">
-          {pg.photos?.[0] && <img src={pg.photos[0]} alt={pg.name} className="object-cover w-full h-full"/>}
+        <div className="h-72 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800">
+          {pg.photos?.[0] ? (
+            <img src={pg.photos[0]} alt={pg.name} className="object-cover w-full h-full" />
+          ) : (
+            <div className="w-full h-full grid place-items-center text-sm text-gray-600 dark:text-gray-300">
+              No image available
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Details */}
       <div className="card space-y-3">
         <h1 className="text-3xl font-bold">{pg.name}</h1>
-        <p className="text-gray-600">{pg.address} — {pg.area}, {pg.city}</p>
+
+        <p className="text-gray-600 dark:text-gray-300">
+          {pg.address} — {pg.area}, {pg.city}
+        </p>
+
         <div className="flex items-center gap-2 text-xs">
           {pg?.facilities?.wifi && <span className="chip">WiFi</span>}
           {pg?.facilities?.hotWater && <span className="chip">Hot water</span>}
@@ -48,16 +82,29 @@ export default function PgDetails() {
         </div>
 
         <div className="space-y-2">
-          <label className="block text-sm font-medium">Choose sharing</label>
-          <select value={sharing} onChange={e => setSharing(e.target.value)} className="border rounded-2xl px-3 py-2">
-            {pg?.rentOptions?.map(r => <option key={r.sharing} value={r.sharing}>{r.sharing} — ₹{r.price}</option>)}
+          <label className="block text-sm font-medium text-gray-800 dark:text-gray-200">
+            Choose sharing
+          </label>
+          <select
+            value={sharing}
+            onChange={e => setSharing(e.target.value)}
+            className="border rounded-2xl px-3 py-2
+                       bg-white text-gray-900 border-gray-300
+                       focus:outline-none focus:ring-2 focus:ring-blue-500
+                       dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600"
+          >
+            {pg?.rentOptions?.map(r => (
+              <option key={r.sharing} value={r.sharing}>
+                {r.sharing} — ₹{r.price}
+              </option>
+            ))}
           </select>
         </div>
 
         <button onClick={reserve} className="btn">Reserve & Get Receipt (Mock)</button>
 
-        <div className="pt-2 text-sm text-gray-700">
-          <p><b>Owner:</b> {pg?.owner?.name} — {pg?.owner?.phone || "NA"}</p>
+        <div className="pt-2 text-sm text-gray-700 dark:text-gray-200">
+          <p><b>Owner:</b> {pg?.owner?.name || "Owner"} — {pg?.owner?.phone || "NA"}</p>
         </div>
       </div>
     </div>

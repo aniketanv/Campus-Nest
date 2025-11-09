@@ -1,40 +1,107 @@
+// server/src/index.js
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 import dotenv from "dotenv";
 import path from "path";
+import fs from "fs";
 import { fileURLToPath } from "url";
+
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/auth.js";
 import pgRoutes from "./routes/pgs.js";
 import bookingRoutes from "./routes/booking.js";
 import contactRoutes from "./routes/contact.js";
 
-dotenv.config();
-const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// ✅ Force-load server/.env explicitly (fixes undefined MONGODB_URI)
+dotenv.config({ path: path.join(__dirname, "../.env") });
 
-// ...
-app.use(cors({
-  origin: "*",
-  methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
-  allowedHeaders: ["Content-Type","Authorization"]
-}));
+// --- App setup ---
+const app = express();
+const PORT = process.env.PORT || 5000;
+const NODE_ENV = process.env.NODE_ENV || "development";
 
-app.use(express.json());
-app.use(morgan("dev"));
+// --- CORS ---
+const ALLOWED_ORIGINS = [
+  process.env.CORS_ORIGIN || "http://localhost:5173",
+  process.env.CLIENT_ORIGIN, // optional extra
+].filter(Boolean);
 
-connectDB();
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      if (!origin) return cb(null, true); // allow tools like curl/postman
+      if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+      if (NODE_ENV === "development") return cb(null, true); // relax in dev
+      return cb(new Error(`CORS: Origin ${origin} not allowed`));
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+app.options("*", cors());
 
-app.get("/", (req, res) => res.json({ ok: true, msg: "CampusNest API up" }));
+// --- Parsers & Logs ---
+app.use(express.json({ limit: "1mb" }));
+app.use(morgan(NODE_ENV === "production" ? "combined" : "dev"));
 
+// --- DB connect ---
+await connectDB(); // uses process.env.MONGODB_URI
+
+// --- Static: /receipts ---
+const receiptsDir = path.join(__dirname, "../receipts");
+if (!fs.existsSync(receiptsDir)) fs.mkdirSync(receiptsDir, { recursive: true });
+app.use("/receipts", express.static(receiptsDir));
+
+// --- Health & Root ---
+app.get("/health", (_req, res) =>
+  res.json({ ok: true, env: NODE_ENV, time: new Date().toISOString() })
+);
+app.get("/", (_req, res) => res.json({ ok: true, msg: "CampusNest API up" }));
+
+// --- Routes ---
 app.use("/api/auth", authRoutes);
 app.use("/api/pgs", pgRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/contact", contactRoutes);
-app.use("/receipts", express.static(path.join(__dirname, "../receipts")));
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+// --- 404 & Error handler ---
+app.use((req, res) => {
+  res.status(404).json({ error: "Not found", path: req.originalUrl });
+});
+
+app.use((err, req, res, _next) => {
+  const status = err.status || 500;
+  if (NODE_ENV !== "test") {
+    console.error("⚠️  Error:", err.message || err);
+  }
+  res.status(status).json({
+    error: err.message || "Server error",
+    ...(NODE_ENV !== "production" ? { stack: err.stack } : {}),
+  });
+});
+
+// --- Start ---
+const server = app.listen(PORT, () =>
+  console.log(`Server running on http://localhost:${PORT}`)
+);
+
+// --- Graceful shutdown ---
+const shutdown = (sig) => async () => {
+  console.log(`\n${sig} received. Shutting down...`);
+  server.close(async () => {
+    try {
+      const { default: mongoose } = await import("mongoose");
+      await mongoose.connection.close(false);
+      console.log("MongoDB connection closed.");
+    } finally {
+      process.exit(0);
+    }
+  });
+};
+process.on("SIGINT", shutdown("SIGINT"));
+process.on("SIGTERM", shutdown("SIGTERM"));
