@@ -16,8 +16,9 @@ export default function PgDetails() {
       try {
         const r = await axios.get(`${api}/api/pgs/${id}`);
         setPg(r.data);
-        // default sharing to first option if present
-        if (r.data?.rentOptions?.[0]?.sharing) setSharing(r.data.rentOptions[0].sharing);
+        if (r.data?.rentOptions?.[0]?.sharing) {
+          setSharing(r.data.rentOptions[0].sharing);
+        }
       } catch (e) {
         console.error(e);
       }
@@ -53,17 +54,38 @@ export default function PgDetails() {
 
   return (
     <div className="grid md:grid-cols-2 gap-6">
-      {/* Media */}
-      <div className="card">
+      {/* Media (hero + thumbnails) */}
+      <div className="card space-y-3">
         <div className="h-72 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800">
           {pg.photos?.[0] ? (
-            <img src={pg.photos[0]} alt={pg.name} className="object-cover w-full h-full" />
+            <img
+              src={pg.photos[0]}
+              alt={pg.name}
+              className="object-cover w-full h-full"
+              referrerPolicy="no-referrer"
+              onError={(e) => { e.currentTarget.style.display = "none"; }}
+            />
           ) : (
             <div className="w-full h-full grid place-items-center text-sm text-gray-600 dark:text-gray-300">
               No image available
             </div>
           )}
         </div>
+
+        {pg.photos?.length > 1 && (
+          <div className="grid grid-cols-4 gap-2">
+            {pg.photos.slice(1, 5).map((u, i) => (
+              <img
+                key={i}
+                src={u}
+                alt={`${pg.name}-${i}`}
+                className="h-20 w-full object-cover rounded-md"
+                referrerPolicy="no-referrer"
+                onError={(e) => { e.currentTarget.style.visibility = "hidden"; }}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Details */}
@@ -106,6 +128,22 @@ export default function PgDetails() {
         <div className="pt-2 text-sm text-gray-700 dark:text-gray-200">
           <p><b>Owner:</b> {pg?.owner?.name || "Owner"} — {pg?.owner?.phone || "NA"}</p>
         </div>
+
+        {/* Info / Lunch timings / Rules image */}
+        {pg.infoImage && (
+          <div className="pt-2">
+            <h3 className="font-semibold mb-2">House Rules / Meal Timings</h3>
+            <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700">
+              <img
+                src={pg.infoImage}
+                alt="Info"
+                className="w-full object-cover"
+                referrerPolicy="no-referrer"
+                onError={(e) => { e.currentTarget.style.display = "none"; }}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
