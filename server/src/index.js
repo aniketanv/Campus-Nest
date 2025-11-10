@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
+import uploadRouter from "./routes/upload.js";
 
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/auth.js";
@@ -33,7 +34,7 @@ const ALLOWED_ORIGINS = [
 app.use(
   cors({
     origin: (origin, cb) => {
-      if (!origin) return cb(null, true); // allow tools like curl/postman
+      if (!origin) return cb(null, true); // allow curl/postman
       if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
       if (NODE_ENV === "development") return cb(null, true); // relax in dev
       return cb(new Error(`CORS: Origin ${origin} not allowed`));
@@ -57,6 +58,11 @@ const receiptsDir = path.join(__dirname, "../receipts");
 if (!fs.existsSync(receiptsDir)) fs.mkdirSync(receiptsDir, { recursive: true });
 app.use("/receipts", express.static(receiptsDir));
 
+// --- Static: /uploads (serves uploaded images) ---
+const uploadsDir = path.join(__dirname, "../uploads");
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+app.use("/uploads", express.static(uploadsDir));
+
 // --- Health & Root ---
 app.get("/health", (_req, res) =>
   res.json({ ok: true, env: NODE_ENV, time: new Date().toISOString() })
@@ -68,6 +74,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/pgs", pgRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/contact", contactRoutes);
+app.use("/api/upload", uploadRouter); // ⬅️ mount uploads here
 
 // --- 404 & Error handler ---
 app.use((req, res) => {
