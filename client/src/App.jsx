@@ -11,6 +11,8 @@ import SignUp from "./pages/SignUp.jsx";
 import DashboardOwner from "./pages/DashboardOwner.jsx";
 import DashboardSeeker from "./pages/DashboardSeeker.jsx";
 import ContactAddPg from "./pages/ContactAddPg.jsx";
+import Payment from "./pages/Payment.jsx";
+
 
 export default function App() {
   return (
@@ -22,6 +24,7 @@ export default function App() {
           <Route path="/about" element={<About />} />
           <Route path="/search" element={<Search />} />
           <Route path="/pg/:id" element={<PgDetails />} />
+          <Route path="/payment/:id" element={<Payment />} />
           <Route path="/signin/owner" element={<SignInOwner />} />
           <Route path="/signin/seeker" element={<SignInSeeker />} />
           <Route path="/signup" element={<SignUp />} />
