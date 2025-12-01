@@ -1,22 +1,30 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
+const CLOUD_NAME = "dhmojlcwp";
+
+function getImageUrl(photoId) {
+  if (!photoId) return "";
+  if (photoId.startsWith("http")) return photoId;
+  return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/${photoId}.jpg`;
+}
+
 export default function PgCard({ item }) {
   return (
     <div className="card flex flex-col gap-3">
       <div className="h-44 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800">
         {item.photos?.[0] ? (
           <img
-            src={item.photos[0]}
+            src={getImageUrl(item.photos[0])}
             alt={item.name}
             className="object-cover w-full h-full"
             referrerPolicy="no-referrer"
             onError={(e) => {
-              // graceful fallback
               e.currentTarget.onerror = null;
               e.currentTarget.replaceWith(
                 Object.assign(document.createElement("div"), {
-                  className: "w-full h-full grid place-items-center text-sm text-gray-500 dark:text-gray-400",
+                  className:
+                    "w-full h-full grid place-items-center text-sm text-gray-500 dark:text-gray-400",
                   innerText: "Image unavailable",
                 })
               );
@@ -40,11 +48,17 @@ export default function PgCard({ item }) {
 
       <div className="flex items-center gap-2 text-xs">
         {item?.facilities?.wifi && <span className="chip">WiFi</span>}
-        {item?.facilities?.hotWater && <span className="chip">Hot water</span>}
-        <span className="chip">Timings: {item?.facilities?.timings || "24x7"}</span>
+        {item?.facilities?.hotWater && (
+          <span className="chip">Hot water</span>
+        )}
+        <span className="chip">
+          Timings: {item?.facilities?.timings || "24x7"}
+        </span>
       </div>
 
-      <Link to={`/pg/${item._id}`} className="btn text-center">View details</Link>
+      <Link to={`/pg/${item._id}`} className="btn text-center">
+        View details
+      </Link>
     </div>
   );
 }

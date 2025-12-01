@@ -23,7 +23,12 @@ export default function Navbar() {
 
         {/* Navigation */}
         <nav className="flex items-center gap-4 text-sm text-gray-800 dark:text-gray-100">
-          {/* Always visible links */}
+          {/* 🏠 Home tab */}
+          <Link to="/" className={linkCls(loc.pathname === "/")}>
+            Home
+          </Link>
+
+          {/* About */}
           <Link to="/about" className={linkCls(loc.pathname === "/about")}>
             About
           </Link>
