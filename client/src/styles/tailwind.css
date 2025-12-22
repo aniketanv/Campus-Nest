@@ -1,0 +1,128 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ================= BASE ================= */
+@layer base {
+  body {
+    @apply bg-gray-100 text-gray-800;
+  }
+
+  .dark body {
+    @apply bg-gray-950 text-gray-100;
+  }
+}
+
+/* ================= COMPONENTS ================= */
+@layer components {
+  /* ---------- Buttons ---------- */
+  .btn {
+    @apply inline-flex items-center justify-center
+           px-4 py-2 rounded-2xl
+           bg-blue-600 text-white
+           shadow-sm
+           hover:bg-blue-700
+           transition;
+  }
+
+  /* ---------- Cards ---------- */
+  .card {
+    @apply rounded-2xl p-5
+           bg-white text-gray-800
+           border border-gray-200
+           shadow-sm
+           transition;
+  }
+
+  .card:hover {
+    @apply shadow-md;
+  }
+
+  /* Dark mode cards MUST be lighter than background */
+  .dark .card {
+    @apply bg-gray-900 text-gray-100
+           border-gray-800
+           shadow-md;
+  }
+
+  .dark .card:hover {
+    @apply shadow-lg shadow-black/40;
+  }
+
+  /* ---------- Chips ---------- */
+  .chip {
+    @apply px-2 py-1 text-xs rounded-full
+           bg-gray-200 text-gray-700;
+  }
+
+  .dark .chip {
+    @apply bg-gray-800 text-gray-100;
+  }
+
+  /* ---------- Inputs ---------- */
+  .input {
+    @apply w-full rounded-2xl
+           px-4 py-3
+           border border-gray-300
+           bg-white text-gray-800
+           placeholder-gray-500
+           focus:outline-none
+           focus:ring-2 focus:ring-blue-500;
+  }
+
+  .dark .input {
+    @apply bg-gray-900 text-gray-100
+           border-gray-700
+           placeholder-gray-400;
+  }
+}
+
+/* ================= NAVBAR ================= */
+@layer components {
+  .navbar {
+    @apply sticky top-0 z-10
+           backdrop-blur-md
+           bg-gray-200/80 text-gray-800
+           border-b border-gray-300
+           shadow-sm
+           transition-all;
+  }
+
+  .dark .navbar {
+    @apply bg-gray-900/80 text-gray-100
+           border-gray-800;
+  }
+
+  /* Navbar links */
+  .nav-link {
+    @apply px-3 py-2 rounded-2xl
+           text-gray-700
+           hover:bg-gray-200
+           transition;
+  }
+
+  .dark .nav-link {
+    @apply text-gray-200 hover:bg-gray-800;
+  }
+
+  /* Active nav link */
+  .nav-link-active {
+    @apply bg-gray-200;
+  }
+
+  .dark .nav-link-active {
+    @apply bg-gray-800;
+  }
+
+  /* Navbar buttons */
+  .nav-btn {
+    @apply px-4 py-2 rounded-2xl
+           border border-gray-300
+           hover:bg-gray-200
+           transition;
+  }
+
+  .dark .nav-btn {
+    @apply border-gray-700 hover:bg-gray-800;
+  }
+}
